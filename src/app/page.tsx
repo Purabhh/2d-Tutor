@@ -273,6 +273,16 @@ export default function LandingPage() {
               )}
             </div>
 
+            {/* Create Account */}
+            <div className="flex justify-center">
+              <button
+                onClick={() => router.push("/signup")}
+                className="glass-pill-wide"
+              >
+                Create Account
+              </button>
+            </div>
+
             {/* Terms */}
             <p className="text-center text-xs text-muted-foreground/60 leading-relaxed">
               By continuing, you agree to our Terms of Service and Privacy Policy.
