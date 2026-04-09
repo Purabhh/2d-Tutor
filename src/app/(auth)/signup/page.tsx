@@ -35,38 +35,47 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-6">
+    <div className="relative flex flex-1 items-center justify-center px-4 overflow-hidden">
+      {/* Gradient orbs */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-1/4 -left-1/4 h-[600px] w-[600px] rounded-full bg-primary/8 blur-[120px]" />
+        <div className="absolute -bottom-1/4 -right-1/4 h-[500px] w-[500px] rounded-full bg-accent/6 blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-sm space-y-8">
+        {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold">Create your account</h1>
-          <p className="text-muted-foreground">Start learning with your AI tutor</p>
+          <h1 className="text-2xl font-bold tracking-tight">Create your account</h1>
+          <p className="text-sm text-muted-foreground">Start learning with your AI tutor</p>
         </div>
 
         <form onSubmit={handleSignup} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium mb-1">Name</label>
+          <div className="space-y-1.5">
+            <label htmlFor="name" className="block text-xs font-medium text-muted-foreground uppercase tracking-wider">Name</label>
             <input
               id="name"
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               required
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="Your name"
+              className="glass-input"
             />
           </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
+          <div className="space-y-1.5">
+            <label htmlFor="email" className="block text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</label>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="you@example.com"
+              className="glass-input"
             />
           </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-1">Password</label>
+          <div className="space-y-1.5">
+            <label htmlFor="password" className="block text-xs font-medium text-muted-foreground uppercase tracking-wider">Password</label>
             <input
               id="password"
               type="password"
@@ -74,18 +83,19 @@ export default function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="••••••••"
+              className="glass-input"
             />
           </div>
 
-          {error && <p className="text-sm text-accent">{error}</p>}
+          {error && (
+            <p className="text-sm text-accent bg-accent/10 rounded-lg px-3 py-2 border border-accent/20">{error}</p>
+          )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-primary py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          >
-            {loading ? 'Creating account...' : 'Create Account'}
+          <button type="submit" disabled={loading} className="glass-button-primary w-full disabled:opacity-50">
+            <span className="relative z-10 text-sm font-medium">
+              {loading ? 'Creating account…' : 'Create Account'}
+            </span>
           </button>
         </form>
 

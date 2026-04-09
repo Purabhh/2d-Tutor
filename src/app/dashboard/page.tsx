@@ -17,20 +17,20 @@ export default async function DashboardPage() {
     .order('updated_at', { ascending: false })
 
   return (
-    <div className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Your Tutors</h1>
-            <p className="text-muted-foreground mt-1">Create and manage your AI tutoring sessions</p>
-          </div>
+    <div className="min-h-screen flex flex-col items-center justify-center px-4">
+      <div className="w-full max-w-2xl space-y-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold tracking-tight">Your Tutors</h1>
+          <p className="text-sm text-muted-foreground mt-2">Select or create a tutor</p>
+        </div>
+        <TutorGrid tutors={tutors ?? []} />
+        <div className="flex justify-center">
           <form action="/api/auth/signout" method="POST">
-            <button className="text-sm text-muted-foreground hover:text-foreground">
+            <button className="glass-fab-pill text-muted-foreground !text-xs cursor-pointer">
               Sign Out
             </button>
           </form>
         </div>
-        <TutorGrid tutors={tutors ?? []} />
       </div>
     </div>
   )
