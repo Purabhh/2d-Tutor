@@ -90,15 +90,9 @@ export default function LandingPage() {
     });
 
     if (error) {
-      const { error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-      if (signUpError) {
-        setError(signUpError.message);
-        setLoading(false);
-        return;
-      }
+      setError(error.message);
+      setLoading(false);
+      return;
     }
 
     router.push("/dashboard");
