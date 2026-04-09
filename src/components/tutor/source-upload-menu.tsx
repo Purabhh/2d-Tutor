@@ -16,8 +16,8 @@ type SourceUploadMenuProps = {
 const menuItems = [
   { label: "PDF", type: "pdf", icon: FileText, accept: ".pdf" },
   { label: "Image", type: "image", icon: Image, accept: "image/*" },
-  { label: "Document", type: "document", icon: Upload, accept: ".doc,.docx,.txt,.md,.csv" },
-  { label: "URL", type: "url", icon: Globe, accept: null },
+  { label: "Document", type: "text", icon: Upload, accept: ".doc,.docx,.txt,.md,.csv" },
+  { label: "URL", type: "webpage", icon: Globe, accept: null },
 ]
 
 export function SourceUploadMenu({ open, onClose, onFileUpload, onUrlSubmit, className }: SourceUploadMenuProps) {

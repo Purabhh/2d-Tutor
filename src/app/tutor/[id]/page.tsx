@@ -109,8 +109,11 @@ export default function TutorPage() {
   }
 
   async function handleFileUpload(files: FileList, type: string) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
     for (const file of Array.from(files)) {
-      const path = `${tutorId}/${crypto.randomUUID()}-${file.name}`
+      const path = `${user.id}/${tutorId}/${crypto.randomUUID()}-${file.name}`
       const { error: uploadError } = await supabase.storage
         .from("sources")
         .upload(path, file)
@@ -141,7 +144,7 @@ export default function TutorPage() {
       .insert({
         tutor_id: tutorId,
         name: url,
-        type: "url",
+        type: "webpage",
         original_url: url,
       })
       .select()
