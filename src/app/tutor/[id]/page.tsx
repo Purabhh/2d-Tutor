@@ -7,7 +7,7 @@ import type { Tutor, Source } from "@/types/database"
 import { ChatMessages, type ChatMessage } from "@/components/tutor/chat-messages"
 import { ChatInput } from "@/components/tutor/chat-input"
 import { ChatToolbar } from "@/components/tutor/chat-toolbar"
-import { SourceCardStack } from "@/components/tutor/source-card-stack"
+import { SourcesOverlay } from "@/components/tutor/sources-overlay"
 import { SourceUploadMenu } from "@/components/tutor/source-upload-menu"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, GraduationCap } from "lucide-react"
@@ -170,50 +170,25 @@ export default function TutorPage() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      {/* Sources sidebar */}
-      <AnimatePresence>
-        {showSources && (
-          <motion.aside
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 320, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="border-r border-border bg-card overflow-hidden shrink-0"
-          >
-            <div className="p-4 h-full overflow-y-auto">
-              <h3 className="font-semibold mb-4">Sources</h3>
-              <SourceCardStack sources={sources} />
-            </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
-
+    <div className="flex h-screen">
       {/* Main chat area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative">
         {/* Header */}
-        <header className="border-b border-border px-4 py-3 flex items-center justify-between shrink-0">
+        <header className="px-4 py-3 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
+            <button
+              className="glass-fab h-8 w-8"
               onClick={() => router.push("/dashboard")}
             >
               <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
-                <GraduationCap className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h2 className="font-semibold text-sm leading-tight">
-                  {tutor.name}
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  {sources.length} source{sources.length !== 1 ? "s" : ""}
-                </p>
-              </div>
+            </button>
+            <div>
+              <h2 className="font-semibold text-sm leading-tight">
+                {tutor.name}
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {sources.length} source{sources.length !== 1 ? "s" : ""}
+              </p>
             </div>
           </div>
           <ChatToolbar
@@ -229,8 +204,15 @@ export default function TutorPage() {
           <ChatMessages messages={messages} isLoading={sending} />
         </div>
 
+        {/* Sources overlay */}
+        <SourcesOverlay
+          sources={sources}
+          open={showSources}
+          onClose={() => setShowSources(false)}
+        />
+
         {/* Input */}
-        <div className="border-t border-border p-4 shrink-0">
+        <div className="p-4 shrink-0">
           <div className="max-w-3xl mx-auto relative">
             <SourceUploadMenu
               open={showUploadMenu}
