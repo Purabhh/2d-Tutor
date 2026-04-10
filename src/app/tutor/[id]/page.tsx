@@ -1,110 +1,150 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import type { Tutor, Source } from "@/types/database"
-import { ChatMessages, type ChatMessage } from "@/components/tutor/chat-messages"
+import { TutorCharacter } from "@/components/tutor/tutor-character"
 import { ChatInput } from "@/components/tutor/chat-input"
-import { ChatToolbar } from "@/components/tutor/chat-toolbar"
+import { FormattedResponsePanel } from "@/components/tutor/formatted-response-panel"
+import { StudioPanel } from "@/components/tutor/studio-panel"
 import { SourcesOverlay } from "@/components/tutor/sources-overlay"
 import { SourceUploadMenu } from "@/components/tutor/source-upload-menu"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, GraduationCap } from "lucide-react"
+import { ArrowLeft, FileText, Clapperboard, BookOpen, Volume2, VolumeX } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function TutorPage() {
   const params = useParams()
   const router = useRouter()
   const supabase = createClient()
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const [tutor, setTutor] = useState<Tutor | null>(null)
   const [sources, setSources] = useState<Source[]>([])
-  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
-  const [showSources, setShowSources] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
   const [voiceEnabled, setVoiceEnabled] = useState(true)
+
+  // Panels
+  const [showFormatted, setShowFormatted] = useState(false)
+  const [showStudio, setShowStudio] = useState(false)
+  const [showSources, setShowSources] = useState(false)
   const [showUploadMenu, setShowUploadMenu] = useState(false)
+
+  // Response content
+  const [spokenText, setSpokenText] = useState<string | null>(null)
+  const [detailedContent, setDetailedContent] = useState<string | null>(null)
+  const [detailedLoading, setDetailedLoading] = useState(false)
+  const [studioGenerating, setStudioGenerating] = useState(false)
+
+  // Chat history (kept in memory, not displayed as bubbles — character speaks)
+  const [chatHistory, setChatHistory] = useState<{ role: string; content: string }[]>([])
 
   const tutorId = params.id as string
 
   useEffect(() => {
     async function load() {
-      const [tutorRes, sourcesRes, messagesRes] = await Promise.all([
+      const [tutorRes, sourcesRes] = await Promise.all([
         supabase.from("tutors").select("*").eq("id", tutorId).single(),
         supabase
           .from("sources")
           .select("*")
           .eq("tutor_id", tutorId)
           .order("created_at", { ascending: false }),
-        supabase
-          .from("messages")
-          .select("*")
-          .eq("tutor_id", tutorId)
-          .order("created_at", { ascending: true }),
       ])
 
       if (tutorRes.data) setTutor(tutorRes.data)
       if (sourcesRes.data) setSources(sourcesRes.data)
-      if (messagesRes.data) {
-        setMessages(
-          messagesRes.data
-            .filter((m) => m.role === "user" || m.role === "assistant")
-            .map((m) => ({
-              id: m.id,
-              role: m.role as "user" | "assistant",
-              content: m.content,
-              created_at: m.created_at,
-            }))
-        )
-      }
       setLoading(false)
     }
     load()
   }, [tutorId])
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+  const speakText = useCallback(async (text: string) => {
+    if (!voiceEnabled) return
+    setIsSpeaking(true)
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      })
+      if (!res.ok) throw new Error("TTS failed")
+
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const audio = new Audio(url)
+      audioRef.current = audio
+
+      audio.onended = () => {
+        setIsSpeaking(false)
+        URL.revokeObjectURL(url)
+      }
+      audio.onerror = () => {
+        setIsSpeaking(false)
+        URL.revokeObjectURL(url)
+      }
+      await audio.play()
+    } catch {
+      setIsSpeaking(false)
     }
-  }, [messages, sending])
+  }, [voiceEnabled])
 
   async function handleSend(content: string) {
-    const userMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content,
-    }
-    setMessages((prev) => [...prev, userMsg])
     setSending(true)
+    setSpokenText(null)
+    setDetailedContent(null)
+
+    const newHistory = [...chatHistory, { role: "user", content }]
+    setChatHistory(newHistory)
 
     try {
       const res = await fetch(`/api/tutors/${tutorId}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: content, voice: voiceEnabled }),
+        body: JSON.stringify({ message: content, history: newHistory }),
       })
 
       if (!res.ok) throw new Error("Chat failed")
 
       const data = await res.json()
-      const assistantMsg: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: data.reply || "Sorry, I couldn't generate a response.",
+
+      // Conversational response — character speaks it
+      const spoken = data.spoken || data.reply || "Sorry, I couldn't generate a response."
+      setSpokenText(spoken)
+      setChatHistory((prev) => [...prev, { role: "assistant", content: spoken }])
+
+      // Detailed response — only if returned
+      if (data.detailed) {
+        setDetailedContent(data.detailed)
+        setShowFormatted(true)
       }
-      setMessages((prev) => [...prev, assistantMsg])
+
+      // Speak it
+      await speakText(spoken)
     } catch {
-      const errorMsg: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: "Something went wrong. Please try again.",
-      }
-      setMessages((prev) => [...prev, errorMsg])
+      setSpokenText("Something went wrong. Please try again.")
     } finally {
       setSending(false)
+    }
+  }
+
+  async function handleStudioGenerate(tool: string, format: string, prompt: string) {
+    setStudioGenerating(true)
+    try {
+      const res = await fetch(`/api/tutors/${tutorId}/studio`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tool, format, prompt }),
+      })
+      if (!res.ok) throw new Error("Studio generation failed")
+      // TODO: handle generated content (audio blob, video url, etc.)
+    } catch {
+      console.error("Studio generation failed")
+    } finally {
+      setStudioGenerating(false)
     }
   }
 
@@ -173,62 +213,141 @@ export default function TutorPage() {
   }
 
   return (
-    <div className="flex h-screen">
-      {/* Main chat area */}
-      <div className="flex-1 flex flex-col min-w-0 relative">
-        {/* Header */}
-        <header className="px-4 py-3 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <button
-              className="glass-fab h-8 w-8"
-              onClick={() => router.push("/dashboard")}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </button>
-            <div>
-              <h2 className="font-semibold text-sm leading-tight">
-                {tutor.name}
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                {sources.length} source{sources.length !== 1 ? "s" : ""}
-              </p>
-            </div>
+    <div className="flex flex-col h-screen relative">
+      {/* Header */}
+      <header className="px-4 py-3 flex items-center justify-between shrink-0 z-20">
+        <div className="flex items-center gap-3">
+          <button
+            className="glass-fab h-8 w-8"
+            onClick={() => router.push("/dashboard")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div>
+            <h2 className="font-semibold text-sm leading-tight">
+              {tutor.name}
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              {sources.length} source{sources.length !== 1 ? "s" : ""}
+            </p>
           </div>
-          <ChatToolbar
-            showSources={showSources}
-            onToggleSources={() => setShowSources(!showSources)}
-            voiceEnabled={voiceEnabled}
-            onToggleVoice={() => setVoiceEnabled(!voiceEnabled)}
-          />
-        </header>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowSources(!showSources)}
+            className={`glass-fab h-8 w-8 ${showSources ? "!bg-white/10" : ""}`}
+          >
+            <BookOpen className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setVoiceEnabled(!voiceEnabled)}
+            className={`glass-fab h-8 w-8 ${voiceEnabled ? "!bg-white/10" : ""}`}
+          >
+            {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          </button>
+        </div>
+      </header>
 
-        {/* Messages */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto">
-          <ChatMessages messages={messages} isLoading={sending} />
+      {/* Main area — character centered */}
+      <div className="flex-1 flex flex-col items-center justify-center relative overflow-hidden">
+        {/* Character */}
+        <div className="flex flex-col items-center">
+          <TutorCharacter
+            isSpeaking={isSpeaking}
+            className="w-48 h-52"
+          />
+
+          {/* Spoken text subtitle */}
+          <AnimatePresence>
+            {spokenText && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mt-4 max-w-md text-center"
+              >
+                <p className="text-sm text-foreground/80 leading-relaxed">{spokenText}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Loading indicator */}
+          <AnimatePresence>
+            {sending && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="mt-4 flex gap-1.5"
+              >
+                <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-pulse" />
+                <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-pulse [animation-delay:150ms]" />
+                <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-pulse [animation-delay:300ms]" />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Sources overlay */}
+        {/* Glass pill buttons — left and right of character */}
+        <div className="absolute left-6 top-1/2 -translate-y-1/2">
+          <button
+            onClick={() => {
+              setShowFormatted(!showFormatted)
+              setShowStudio(false)
+            }}
+            className={`glass-fab-pill flex-col !gap-1 !py-3 !px-4 ${showFormatted ? "!bg-white/10" : ""}`}
+          >
+            <FileText className="h-4 w-4" />
+            <span className="text-[10px]">Response</span>
+          </button>
+        </div>
+        <div className="absolute right-6 top-1/2 -translate-y-1/2">
+          <button
+            onClick={() => {
+              setShowStudio(!showStudio)
+              setShowFormatted(false)
+            }}
+            className={`glass-fab-pill flex-col !gap-1 !py-3 !px-4 ${showStudio ? "!bg-white/10" : ""}`}
+          >
+            <Clapperboard className="h-4 w-4" />
+            <span className="text-[10px]">Studio</span>
+          </button>
+        </div>
+
+        {/* Panels */}
+        <FormattedResponsePanel
+          open={showFormatted}
+          onClose={() => setShowFormatted(false)}
+          content={detailedContent}
+          isLoading={detailedLoading}
+        />
+        <StudioPanel
+          open={showStudio}
+          onClose={() => setShowStudio(false)}
+          onGenerate={handleStudioGenerate}
+          isGenerating={studioGenerating}
+        />
         <SourcesOverlay
           sources={sources}
           open={showSources}
           onClose={() => setShowSources(false)}
         />
+      </div>
 
-        {/* Input */}
-        <div className="p-4 shrink-0">
-          <div className="max-w-3xl mx-auto relative">
-            <SourceUploadMenu
-              open={showUploadMenu}
-              onClose={() => setShowUploadMenu(false)}
-              onFileUpload={handleFileUpload}
-              onUrlSubmit={handleUrlSubmit}
-            />
-            <ChatInput
-              onSend={handleSend}
-              onAttach={() => setShowUploadMenu(!showUploadMenu)}
-              disabled={sending}
-            />
-          </div>
+      {/* Input area */}
+      <div className="p-4 shrink-0 z-20">
+        <div className="max-w-xl mx-auto relative">
+          <SourceUploadMenu
+            open={showUploadMenu}
+            onClose={() => setShowUploadMenu(false)}
+            onFileUpload={handleFileUpload}
+            onUrlSubmit={handleUrlSubmit}
+          />
+          <ChatInput
+            onSend={handleSend}
+            onAttach={() => setShowUploadMenu(!showUploadMenu)}
+            disabled={sending}
+          />
         </div>
       </div>
     </div>

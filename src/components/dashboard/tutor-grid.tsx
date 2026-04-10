@@ -35,7 +35,7 @@ const SWIPE_THRESHOLD = 50
 
 export function TutorGrid({ tutors: initialTutors }: { tutors: Tutor[] }) {
   const [tutors, setTutors] = useState(initialTutors)
-  const [layout, setLayout] = useState<LayoutMode>("stack")
+  const [layout, setLayout] = useState<LayoutMode>("grid")
   const [activeIndex, setActiveIndex] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [creating, setCreating] = useState(false)
