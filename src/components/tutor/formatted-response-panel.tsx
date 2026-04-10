@@ -20,7 +20,7 @@ export function FormattedResponsePanel({ open, onClose, content, isLoading }: Fo
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: -40, scale: 0.95 }}
           transition={{ type: "spring", damping: 26, stiffness: 300 }}
-          className="absolute left-4 top-16 bottom-20 w-[380px] z-30 flex flex-col rounded-2xl overflow-hidden"
+          className="fixed left-4 top-16 bottom-4 w-[380px] z-40 flex flex-col rounded-2xl overflow-hidden"
           style={{
             background: "rgba(255, 255, 255, 0.03)",
             backdropFilter: "blur(24px)",

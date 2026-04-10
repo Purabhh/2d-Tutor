@@ -213,9 +213,9 @@ export default function TutorPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen relative">
-      {/* Header */}
-      <header className="px-4 py-3 flex items-center justify-between shrink-0 z-20">
+    <div className="flex flex-col h-screen relative overflow-hidden">
+      {/* Header — floating over everything */}
+      <header className="absolute top-0 left-0 right-0 px-4 py-3 flex items-center justify-between z-30">
         <div className="flex items-center gap-3">
           <button
             className="glass-fab h-8 w-8"
@@ -248,48 +248,66 @@ export default function TutorPage() {
         </div>
       </header>
 
-      {/* Main area — character centered */}
-      <div className="flex-1 flex flex-col items-center justify-center relative overflow-hidden">
-        {/* Character */}
-        <div className="flex flex-col items-center">
-          <TutorCharacter
-            isSpeaking={isSpeaking}
-            className="w-48 h-52"
-          />
-
-          {/* Spoken text subtitle */}
-          <AnimatePresence>
-            {spokenText && (
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="mt-4 max-w-md text-center"
-              >
+      {/* Character area — takes up top ~60% */}
+      <div className="flex-1 flex flex-col items-center justify-end relative z-10 pb-0">
+        {/* Spoken text subtitle — above character */}
+        <AnimatePresence>
+          {spokenText && !sending && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="mb-4 max-w-lg text-center px-4"
+            >
+              <div className="glass-textbox rounded-2xl px-5 py-3">
                 <p className="text-sm text-foreground/80 leading-relaxed">{spokenText}</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-          {/* Loading indicator */}
-          <AnimatePresence>
-            {sending && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="mt-4 flex gap-1.5"
-              >
-                <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-pulse" />
-                <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-pulse [animation-delay:150ms]" />
-                <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-pulse [animation-delay:300ms]" />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        {/* Loading indicator */}
+        <AnimatePresence>
+          {sending && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="mb-4 flex gap-1.5"
+            >
+              <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-pulse [animation-delay:150ms]" />
+              <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-pulse [animation-delay:300ms]" />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Glass pill buttons — left and right of character */}
-        <div className="absolute left-6 top-1/2 -translate-y-1/2">
+        {/* Character — large, sitting at desk edge */}
+        <TutorCharacter
+          isSpeaking={isSpeaking}
+          className="w-[340px] h-[280px] md:w-[420px] md:h-[340px]"
+        />
+      </div>
+
+      {/* Desk — full width, bottom section */}
+      <div
+        className="relative shrink-0 z-20"
+        style={{
+          background: "linear-gradient(180deg, #5C3D2E 0%, #4A2F22 100%)",
+          boxShadow: "0 -4px 20px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.08)",
+          marginTop: "-20px",
+        }}
+      >
+        {/* Desk top edge highlight */}
+        <div
+          className="absolute top-0 left-0 right-0 h-[3px]"
+          style={{
+            background: "linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.12) 30%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.12) 70%, transparent 95%)",
+          }}
+        />
+
+        {/* Glass pill buttons on desk surface */}
+        <div className="flex items-start justify-between px-6 pt-5">
           <button
             onClick={() => {
               setShowFormatted(!showFormatted)
@@ -300,8 +318,7 @@ export default function TutorPage() {
             <FileText className="h-4 w-4" />
             <span className="text-[10px]">Response</span>
           </button>
-        </div>
-        <div className="absolute right-6 top-1/2 -translate-y-1/2">
+
           <button
             onClick={() => {
               setShowStudio(!showStudio)
@@ -314,42 +331,42 @@ export default function TutorPage() {
           </button>
         </div>
 
-        {/* Panels */}
-        <FormattedResponsePanel
-          open={showFormatted}
-          onClose={() => setShowFormatted(false)}
-          content={detailedContent}
-          isLoading={detailedLoading}
-        />
-        <StudioPanel
-          open={showStudio}
-          onClose={() => setShowStudio(false)}
-          onGenerate={handleStudioGenerate}
-          isGenerating={studioGenerating}
-        />
-        <SourcesOverlay
-          sources={sources}
-          open={showSources}
-          onClose={() => setShowSources(false)}
-        />
-      </div>
-
-      {/* Input area */}
-      <div className="p-4 shrink-0 z-20">
-        <div className="max-w-xl mx-auto relative">
-          <SourceUploadMenu
-            open={showUploadMenu}
-            onClose={() => setShowUploadMenu(false)}
-            onFileUpload={handleFileUpload}
-            onUrlSubmit={handleUrlSubmit}
-          />
-          <ChatInput
-            onSend={handleSend}
-            onAttach={() => setShowUploadMenu(!showUploadMenu)}
-            disabled={sending}
-          />
+        {/* Chat input on desk */}
+        <div className="px-6 pb-6 pt-3">
+          <div className="max-w-xl mx-auto relative">
+            <SourceUploadMenu
+              open={showUploadMenu}
+              onClose={() => setShowUploadMenu(false)}
+              onFileUpload={handleFileUpload}
+              onUrlSubmit={handleUrlSubmit}
+            />
+            <ChatInput
+              onSend={handleSend}
+              onAttach={() => setShowUploadMenu(!showUploadMenu)}
+              disabled={sending}
+            />
+          </div>
         </div>
       </div>
+
+      {/* Panels — overlay on top of everything */}
+      <FormattedResponsePanel
+        open={showFormatted}
+        onClose={() => setShowFormatted(false)}
+        content={detailedContent}
+        isLoading={detailedLoading}
+      />
+      <StudioPanel
+        open={showStudio}
+        onClose={() => setShowStudio(false)}
+        onGenerate={handleStudioGenerate}
+        isGenerating={studioGenerating}
+      />
+      <SourcesOverlay
+        sources={sources}
+        open={showSources}
+        onClose={() => setShowSources(false)}
+      />
     </div>
   )
 }

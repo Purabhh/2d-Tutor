@@ -53,7 +53,7 @@ export function SourcesOverlay({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 12, scale: 0.96 }}
           transition={{ type: "spring", damping: 26, stiffness: 340 }}
-          className="absolute inset-x-4 top-16 bottom-20 z-30 flex flex-col rounded-2xl overflow-hidden"
+          className="fixed inset-x-4 top-16 bottom-4 z-40 flex flex-col rounded-2xl overflow-hidden max-w-md mx-auto"
           style={{
             background: "rgba(255, 255, 255, 0.03)",
             backdropFilter: "blur(24px)",
