@@ -43,7 +43,7 @@ export function TutorCharacter({ isSpeaking, className }: TutorCharacterProps) {
   return (
     <div className={className}>
       <motion.svg
-        viewBox="0 0 300 250"
+        viewBox="0 0 300 235"
         className="w-full h-full"
         preserveAspectRatio="xMidYMax meet"
         style={{ filter: "drop-shadow(0 12px 40px rgba(0,0,0,0.4))" }}

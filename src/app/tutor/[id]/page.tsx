@@ -248,8 +248,8 @@ export default function TutorPage() {
         </div>
       </header>
 
-      {/* Character area — vertically centered between header and desk */}
-      <div className="flex-1 flex flex-col items-center justify-center relative z-10">
+      {/* Character area — bottom-aligned so character sits on desk */}
+      <div className="flex-1 flex flex-col items-center justify-end relative z-10">
         {/* Spoken text subtitle — above character */}
         <AnimatePresence>
           {spokenText && !sending && (
@@ -297,7 +297,7 @@ export default function TutorPage() {
           </button>
 
           {/* Character — base touches desk */}
-          <div className="relative z-10 mb-[-120px] md:mb-[-140px]">
+          <div className="relative z-10">
             <TutorCharacter
               isSpeaking={isSpeaking}
               className="w-[300px] h-[250px] md:w-[400px] md:h-[320px]"
