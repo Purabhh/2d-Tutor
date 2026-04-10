@@ -282,25 +282,33 @@ export default function TutorPage() {
           )}
         </AnimatePresence>
 
-        {/* Character — large, sitting at desk edge */}
-        <TutorCharacter
-          isSpeaking={isSpeaking}
-          className="w-[340px] h-[280px] md:w-[420px] md:h-[340px]"
-        />
+        {/* Character — large, sitting at desk edge, overlaps desk */}
+        <div className="relative z-10 mb-[-40px] md:mb-[-50px]">
+          <TutorCharacter
+            isSpeaking={isSpeaking}
+            className="w-[340px] h-[280px] md:w-[420px] md:h-[340px]"
+          />
+        </div>
       </div>
 
       {/* Desk — full width, bottom section */}
       <div
-        className="relative shrink-0 z-20"
+        className="relative shrink-0 z-[5]"
         style={{
           background: "linear-gradient(180deg, #5C3D2E 0%, #4A2F22 100%)",
           boxShadow: "0 -4px 20px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.08)",
-          marginTop: "-20px",
         }}
       >
+        {/* Desk front panel — covers character's lower body for "behind desk" effect */}
+        <div
+          className="absolute top-0 left-0 right-0 h-[30px] z-10"
+          style={{
+            background: "linear-gradient(180deg, #5C3D2E 0%, #553828 100%)",
+          }}
+        />
         {/* Desk top edge highlight */}
         <div
-          className="absolute top-0 left-0 right-0 h-[3px]"
+          className="absolute top-0 left-0 right-0 h-[3px] z-20"
           style={{
             background: "linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.12) 30%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.12) 70%, transparent 95%)",
           }}
