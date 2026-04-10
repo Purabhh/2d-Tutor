@@ -326,13 +326,6 @@ export default function TutorPage() {
           boxShadow: "0 -4px 20px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.08)",
         }}
       >
-        {/* Desk front panel — covers character's lower body for "behind desk" effect */}
-        <div
-          className="absolute top-0 left-0 right-0 h-[30px] z-10"
-          style={{
-            background: "linear-gradient(180deg, #5C3D2E 0%, #553828 100%)",
-          }}
-        />
         {/* Desk top edge highlight */}
         <div
           className="absolute top-0 left-0 right-0 h-[3px] z-20"
