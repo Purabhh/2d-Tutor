@@ -297,7 +297,7 @@ export default function TutorPage() {
           </button>
 
           {/* Character — base touches desk */}
-          <div className="relative z-10 mb-[-70px] md:mb-[-85px]">
+          <div className="relative z-10 mb-[-120px] md:mb-[-140px]">
             <TutorCharacter
               isSpeaking={isSpeaking}
               className="w-[300px] h-[250px] md:w-[400px] md:h-[320px]"
