@@ -283,7 +283,7 @@ export default function TutorPage() {
         </AnimatePresence>
 
         {/* Character + flanking buttons */}
-        <div className="flex items-end gap-6 md:gap-10">
+        <div className="flex items-end gap-10 md:gap-16">
           {/* Response button — left of character */}
           <button
             onClick={() => {
@@ -296,8 +296,8 @@ export default function TutorPage() {
             <span className="text-[10px]">Response</span>
           </button>
 
-          {/* Character — overlaps desk below */}
-          <div className="relative z-10 mb-[-40px] md:mb-[-50px]">
+          {/* Character — base touches desk */}
+          <div className="relative z-10 mb-[-70px] md:mb-[-85px]">
             <TutorCharacter
               isSpeaking={isSpeaking}
               className="w-[300px] h-[250px] md:w-[400px] md:h-[320px]"
