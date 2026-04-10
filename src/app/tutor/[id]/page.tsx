@@ -248,8 +248,8 @@ export default function TutorPage() {
         </div>
       </header>
 
-      {/* Character area — takes up top ~60% */}
-      <div className="flex-1 flex flex-col items-center justify-end relative z-10 pb-0">
+      {/* Character area — vertically centered between header and desk */}
+      <div className="flex-1 flex flex-col items-center justify-center relative z-10">
         {/* Spoken text subtitle — above character */}
         <AnimatePresence>
           {spokenText && !sending && (
@@ -282,12 +282,39 @@ export default function TutorPage() {
           )}
         </AnimatePresence>
 
-        {/* Character — large, sitting at desk edge, overlaps desk */}
-        <div className="relative z-10 mb-[-40px] md:mb-[-50px]">
-          <TutorCharacter
-            isSpeaking={isSpeaking}
-            className="w-[340px] h-[280px] md:w-[420px] md:h-[340px]"
-          />
+        {/* Character + flanking buttons */}
+        <div className="flex items-end gap-6 md:gap-10">
+          {/* Response button — left of character */}
+          <button
+            onClick={() => {
+              setShowFormatted(!showFormatted)
+              setShowStudio(false)
+            }}
+            className={`glass-fab-pill flex-col !gap-1 !py-3 !px-4 mb-8 ${showFormatted ? "!bg-white/10" : ""}`}
+          >
+            <FileText className="h-4 w-4" />
+            <span className="text-[10px]">Response</span>
+          </button>
+
+          {/* Character — overlaps desk below */}
+          <div className="relative z-10 mb-[-40px] md:mb-[-50px]">
+            <TutorCharacter
+              isSpeaking={isSpeaking}
+              className="w-[300px] h-[250px] md:w-[400px] md:h-[320px]"
+            />
+          </div>
+
+          {/* Studio button — right of character */}
+          <button
+            onClick={() => {
+              setShowStudio(!showStudio)
+              setShowFormatted(false)
+            }}
+            className={`glass-fab-pill flex-col !gap-1 !py-3 !px-4 mb-8 ${showStudio ? "!bg-white/10" : ""}`}
+          >
+            <Clapperboard className="h-4 w-4" />
+            <span className="text-[10px]">Studio</span>
+          </button>
         </div>
       </div>
 
@@ -314,33 +341,8 @@ export default function TutorPage() {
           }}
         />
 
-        {/* Glass pill buttons on desk surface */}
-        <div className="flex items-start justify-between px-6 pt-5">
-          <button
-            onClick={() => {
-              setShowFormatted(!showFormatted)
-              setShowStudio(false)
-            }}
-            className={`glass-fab-pill flex-col !gap-1 !py-3 !px-4 ${showFormatted ? "!bg-white/10" : ""}`}
-          >
-            <FileText className="h-4 w-4" />
-            <span className="text-[10px]">Response</span>
-          </button>
-
-          <button
-            onClick={() => {
-              setShowStudio(!showStudio)
-              setShowFormatted(false)
-            }}
-            className={`glass-fab-pill flex-col !gap-1 !py-3 !px-4 ${showStudio ? "!bg-white/10" : ""}`}
-          >
-            <Clapperboard className="h-4 w-4" />
-            <span className="text-[10px]">Studio</span>
-          </button>
-        </div>
-
         {/* Chat input on desk */}
-        <div className="px-6 pb-6 pt-3">
+        <div className="px-6 pb-6 pt-5">
           <div className="max-w-xl mx-auto relative">
             <SourceUploadMenu
               open={showUploadMenu}
