@@ -1,3 +1,19 @@
+# 2D Tutor
+
+The original AI tutor app (before Mochee). Upload study materials and chat with an AI tutor that speaks and explains.
+
+## Screenshots
+
+| Landing | Dashboard (stack) |
+|---|---|
+| ![Landing](docs/screenshots/landing.png) | ![Dashboard stack](docs/screenshots/dashboard-stack.png) |
+
+| Dashboard (list) | Tutor chat |
+|---|---|
+| ![Dashboard list](docs/screenshots/dashboard-list.png) | ![Tutor chat](docs/screenshots/tutor-chat.png) |
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
